@@ -49,7 +49,7 @@ class ReflexAgent(Agent):
             index for index in range(len(scores)) if scores[index] == bestScore
         ]
         chosenIndex = random.choice(bestIndices)  # Pick randomly among the best
-
+        print(chosenIndex)
         "Add more of your code here if you want to"
 
         return legalMoves[chosenIndex]
@@ -86,17 +86,17 @@ class ReflexAgent(Agent):
 
         agent_postion = successorGameState.getPacmanPosition()
         food_positions = currentGameState.getFood().asList()
-        # print(food_positions)
+
         food_positions_lst = []
         for food_position in food_positions:
             food_positions_lst.append(manhattanDistance(agent_postion, food_position))
 
-        min_food = min(food_positions_lst) + 1
-        ghost_food = min(ghost_positions_lst)
+        min_food = min(food_positions_lst) + 0.1
+        min_ghost = min(ghost_positions_lst)
 
-        action = ghost_food / min_food
-        print(action)
-        return action
+        action_point = min_ghost / min_food
+        # print(action_point)
+        return action_point
 
 
 def scoreEvaluationFunction(currentGameState: GameState):
