@@ -169,22 +169,10 @@ class MinimaxAgent(MultiAgentSearchAgent):
 
         possible_moves = gameState.getLegalActions(player_type)
         if player_type == 0:
-            max_evaluation = float("-inf")
-            for move in possible_moves:
-                evaluation = self.get_best_move(gameState, move, depth, player_type)
-                if max_evaluation < evaluation:
-                    max_evaluation = evaluation 
-                    max_move = move
-            return max_evaluation, max_move 
+            return self.max_player(gameState, possible_moves, depth, player_type)
 
-        else:
-            min_evaluation = float("inf")
-            for move in possible_moves:
-                evaluation = self.get_best_move(gameState, move, depth, player_type)
-                if min_evaluation > evaluation:
-                    min_evaluation = evaluation
-                    min_move = move
-            return min_evaluation, min_move
+        if player_type != 0:
+            return self.min_player(gameState, possible_moves, depth, player_type)
 
     def get_best_move(self, gameState, move, depth, player_type):
         successor = gameState.generateSuccessor(player_type, move)
@@ -195,6 +183,26 @@ class MinimaxAgent(MultiAgentSearchAgent):
             successor_depth += 1
         
         return self.minimax(successor, successor_depth, successor_index)[0]
+    
+    def max_player(self, gameState, possible_moves, depth, player_type):
+        max_evaluation = float("-inf")
+        for move in possible_moves:
+            evaluation = self.get_best_move(gameState, move, depth, player_type)
+            if max_evaluation < evaluation:
+                max_evaluation = evaluation 
+                max_move = move
+
+        return max_evaluation, max_move 
+
+    def min_player(self, gameState, possible_moves, depth, player_type):
+        min_evaluation = float("inf")
+        for move in possible_moves:
+            evaluation = self.get_best_move(gameState, move, depth, player_type)
+            if min_evaluation > evaluation:
+                min_evaluation = evaluation
+                min_move = move
+
+        return min_evaluation, min_move
 
 
 
