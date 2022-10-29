@@ -162,43 +162,49 @@ class MinimaxAgent(MultiAgentSearchAgent):
         "*** YOUR CODE HERE ***"
         result = self.minimax(gameState, 0, 0)
 
-        return result[0]
+        return result[1]
 
     def minimax(self, gameState, depth, player_type):
-        if depth==self.depth or len(gameState.getLegalActions(player_type)) == 0:
-            return gameState.getScore(), ''
+        if depth==self.depth or len(gameState.getLegalActions(player_type)) == 0 and gameState.isWin() or gameState.isLose():
+            return gameState.getScore(), ""
 
         if player_type == 0:
             possible_moves = gameState.getLegalActions(player_type)
             max_evaluation = float("-inf")
             for move in possible_moves:
                 successor = gameState.generateSuccessor(player_type, move)
-                if player_type + 1 == gameState.getNumAgents():
-                    player_type = 0
-                    player_type += 1
+                successor_index = player_type + 1
+                successor_depth = depth
+                if successor_index == gameState.getNumAgents():
+                    successor_index = 0
+                    successor_depth += 1
+
+                evaluation = self.minimax(successor, successor_depth, successor_index)[0]
                 
-                evaluation = self.minimax(successor, depth + 1, player_type + 1)[0]
-                
-                if max_evaluation > evaluation:
-                    max_evaluation = evaluation
+                if max_evaluation < evaluation:
+                    max_evaluation = evaluation 
+                    max_move = move
             
-            return max_evaluation, move
+            return max_evaluation, max_move 
 
         else:
             possible_moves = gameState.getLegalActions(player_type)
             min_evaluation = float("inf")
             for move in possible_moves:
                 successor = gameState.generateSuccessor(player_type, move)
-                if player_type + 1 == gameState.getNumAgents():
-                    player_type = 0
-                    player_type += 1
+                successor_index = player_type + 1
+                successor_depth = depth
+                if successor_index == gameState.getNumAgents():
+                    successor_index = 0
+                    successor_depth += 1
                 
-                evaluation = self.minimax(successor, depth + 1, player_type + 1)[0]
+                evaluation = self.minimax(successor, successor_depth, successor_index)[0]
                 
                 if min_evaluation > evaluation:
                     min_evaluation = evaluation
+                    min_move = move
             
-            return min_evaluation, move
+            return min_evaluation, min_move
 
 
 class AlphaBetaAgent(MultiAgentSearchAgent):
