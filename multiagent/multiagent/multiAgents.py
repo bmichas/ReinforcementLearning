@@ -75,6 +75,7 @@ class ReflexAgent(Agent):
         newScaredTimes = [ghostState.scaredTimer for ghostState in newGhostStates]
 
         "*** YOUR CODE HERE ***"
+        # print('q1')
         agent_postion = successorGameState.getPacmanPosition()
         ghost_positions = successorGameState.getGhostPositions()
         # print(ghost_positions)
@@ -155,12 +156,13 @@ class MinimaxAgent(MultiAgentSearchAgent):
         Returns whether or not the game state is a losing state
         """
         "*** YOUR CODE HERE ***"
+        # print('q2')
         result = self.minimax(gameState, 0, 0)
         return result[1]
 
     def minimax(self, gameState, depth, player_type):
         if depth==self.depth or len(gameState.getLegalActions(player_type)) == 0 and gameState.isWin() or gameState.isLose():
-            return gameState.getScore(), ""
+            return self.evaluationFunction(gameState), ""
 
         possible_moves = gameState.getLegalActions(player_type)
         if player_type == 0:
@@ -209,12 +211,13 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
         Returns the minimax action using self.depth and self.evaluationFunction
         """
         "*** YOUR CODE HERE ***"
+        # print('q3')
         result = self.alphabeta(gameState, 0, 0, float("-inf"), float("inf"))
         return result[1]
 
     def alphabeta(self, gameState, depth, player_type, alpha, beta):
         if depth==self.depth or len(gameState.getLegalActions(player_type)) == 0 and gameState.isWin() or gameState.isLose():
-            return gameState.getScore(), ""
+            return self.evaluationFunction(gameState), ""
 
         possible_moves = gameState.getLegalActions(player_type)
         if player_type == 0:
@@ -274,12 +277,13 @@ class ExpectimaxAgent(MultiAgentSearchAgent):
         legal moves.
         """
         "*** YOUR CODE HERE ***"
+        # print('q4')
         result = self.expectimax(gameState, 0, 0)
         return result[1]
 
     def expectimax(self, gameState, depth, player_type):
         if depth==self.depth or len(gameState.getLegalActions(player_type)) == 0 and gameState.isWin() or gameState.isLose():
-            return gameState.getScore(), ""
+            return self.evaluationFunction(gameState), ""
 
         possible_moves = gameState.getLegalActions(player_type)
         if player_type == 0:
@@ -316,47 +320,48 @@ class ExpectimaxAgent(MultiAgentSearchAgent):
             avg_evaluation += avg_probability * evaluation
         return avg_evaluation, ""
 
+
 def betterEvaluationFunction(currentGameState: GameState):
     """
     Your extreme ghost-hunting, pellet-nabbing, food-gobbling, unstoppable
     evaluation function (question 5).
-
     DESCRIPTION: <write something here so we know what you did>
     """
     "*** YOUR CODE HERE ***"
+    # print('q5')
     def count_distance(a, b):
         return [manhattanDistance(a, destination) for destination in b]
 
-    def set_score(ghost_position, food_distance, capsule_count):
+    def set_score(ghost_position, food_distance):
+        min_food_distance = 1
+        game_score = currentGameState.getScore()
         ratio = {
-            'food': 100000,
-            'food_distance': 10000,
-            'capsule':1000
+            'food': -100,
+            'food_distance': 100,
+            'score': 300
         }
-
+        
         game_score = currentGameState.getScore()
         if len(food_distance) > 0:
             min_food_distance = min(food_distance)
         
         for ghost in ghost_position:
             if ghost < 2:
-                min_food_distance = 1000000
+                min_food_distance = 1000
 
-        score = sum(ratio["food_distance"]* 1/min_food_distance, 
-        ratio["food"] * len(food_distance),
-        ratio["capsule"] * capsule_count)
+        score = (ratio["food_distance"] * 1/min_food_distance) + (ratio["food"] * len(food_distance)) + (ratio["score"] + game_score)
 
         return score
 
     pacman_position = currentGameState.getPacmanPosition()
-    ghost_position = currentGameState.getGhostPosition()
+    ghost_position = currentGameState.getGhostPositions()
     food_list = currentGameState.getFood().asList()
-    capsule_count = len(currentGameState.getCapsules())
 
     food_distance = count_distance(pacman_position, food_list)
     ghost_distance = count_distance(pacman_position, ghost_position)
 
-    return set_score(ghost_position, food_distance, capsule_count)
+    return set_score(ghost_distance, food_distance)
 
 # Abbreviation
 better = betterEvaluationFunction
+
