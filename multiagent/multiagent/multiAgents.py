@@ -270,18 +270,65 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
 
 class ExpectimaxAgent(MultiAgentSearchAgent):
     """
-    Your expectimax agent (question 4)
+    Your minimax agent with alpha-beta pruning (question 3)
     """
 
     def getAction(self, gameState: GameState):
         """
-        Returns the expectimax action using self.depth and self.evaluationFunction
-
-        All ghosts should be modeled as choosing uniformly at random from their
-        legal moves.
+        Returns the minimax action using self.depth and self.evaluationFunction
         """
         "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+        result = self.alphabeta(gameState, 0, 0, float("-inf"), float("inf"))
+        return result[1]
+
+    def expectimax(self, gameState, depth, player_type, alpha, beta):
+        if depth==self.depth or len(gameState.getLegalActions(player_type)) == 0 and gameState.isWin() or gameState.isLose():
+            return gameState.getScore(), ""
+
+        possible_moves = gameState.getLegalActions(player_type)
+        if player_type == 0:
+            return self.max_player(gameState, possible_moves, depth, player_type, alpha, beta)
+
+        if player_type != 0:
+            return self.min_player(gameState, possible_moves, depth, player_type, alpha, beta)
+
+    def get_best_move(self, gameState, move, depth, player_type, alpha, beta):
+        successor = gameState.generateSuccessor(player_type, move)
+        successor_index = player_type + 1
+        successor_depth = depth
+        if successor_index == gameState.getNumAgents():
+            successor_index = 0
+            successor_depth += 1
+        
+        return self.alphabeta(successor, successor_depth, successor_index, alpha, beta)[0]
+    
+    def max_player(self, gameState, possible_moves, depth, player_type, alpha, beta):
+        max_evaluation = float("-inf")
+        for move in possible_moves:
+            evaluation = self.get_best_move(gameState, move, depth, player_type, alpha, beta)
+            if max_evaluation < evaluation:
+                max_evaluation = evaluation 
+                max_move = move
+
+            alpha = max(alpha, max_evaluation)
+            if max_evaluation > beta:
+               return max_evaluation, max_move
+        
+        return max_evaluation, max_move 
+
+    def avg_player(self, gameState, possible_moves, depth, player_type, alpha, beta):
+        avg_evaluation = 0
+        for move in possible_moves:
+            evaluation = self.get_best_move(gameState, move, depth, player_type, alpha, beta)
+            if min_evaluation > evaluation:
+                min_evaluation = evaluation
+                min_move = move
+
+            beta = min(beta, min_evaluation)
+            if min_evaluation < alpha:
+                return min_evaluation, min_move
+
+        return min_evaluation, min_move
 
 
 def betterEvaluationFunction(currentGameState: GameState):
