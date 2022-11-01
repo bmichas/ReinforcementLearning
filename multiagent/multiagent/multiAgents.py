@@ -12,6 +12,7 @@
 # Pieter Abbeel (pabbeel@cs.berkeley.edu).
 
 
+from operator import countOf
 from util import manhattanDistance
 from game import Directions
 import random, util
@@ -137,28 +138,6 @@ class MinimaxAgent(MultiAgentSearchAgent):
     """
 
     def getAction(self, gameState: GameState):
-        """
-        Returns the minimax action from the current gameState using self.depth
-        and self.evaluationFunction.
-
-        Here are some method calls that might be useful when implementing minimax.
-
-        gameState.getLegalActions(agentIndex):
-        Returns a list of legal actions for an agent
-        agentIndex=0 means Pacman, ghosts are >= 1
-
-        gameState.generateSuccessor(agentIndex, action):
-        Returns the successor game state after an agent takes an action
-
-        gameState.getNumAgents():
-        Returns the total number of agents in the game
-
-        gameState.isWin():
-        Returns whether or not the game state is a winning state
-
-        gameState.isLose():
-        Returns whether or not the game state is a losing state
-        """
         "*** YOUR CODE HERE ***"
         result = self.minimax(gameState, 0, 0)
         return result[1]
@@ -208,13 +187,10 @@ class MinimaxAgent(MultiAgentSearchAgent):
 
 class AlphaBetaAgent(MultiAgentSearchAgent):
     """
-    Your minimax agent with alpha-beta pruning (question 3)
+    Your alphabeta agent with alpha-beta pruning (question 3)
     """
 
     def getAction(self, gameState: GameState):
-        """
-        Returns the minimax action using self.depth and self.evaluationFunction
-        """
         "*** YOUR CODE HERE ***"
         result = self.alphabeta(gameState, 0, 0, float("-inf"), float("inf"))
         return result[1]
@@ -270,29 +246,26 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
 
 class ExpectimaxAgent(MultiAgentSearchAgent):
     """
-    Your minimax agent with alpha-beta pruning (question 3)
+    Your expectimax agent with alpha-beta pruning (question 3)
     """
 
     def getAction(self, gameState: GameState):
-        """
-        Returns the minimax action using self.depth and self.evaluationFunction
-        """
         "*** YOUR CODE HERE ***"
-        result = self.alphabeta(gameState, 0, 0, float("-inf"), float("inf"))
+        result = self.expectimax(gameState, 0, 0)
         return result[1]
 
-    def expectimax(self, gameState, depth, player_type, alpha, beta):
+    def expectimax(self, gameState, depth, player_type):
         if depth==self.depth or len(gameState.getLegalActions(player_type)) == 0 and gameState.isWin() or gameState.isLose():
             return gameState.getScore(), ""
 
         possible_moves = gameState.getLegalActions(player_type)
         if player_type == 0:
-            return self.max_player(gameState, possible_moves, depth, player_type, alpha, beta)
+            return self.max_player(gameState, possible_moves, depth, player_type)
 
         if player_type != 0:
-            return self.min_player(gameState, possible_moves, depth, player_type, alpha, beta)
+            return self.avg_player(gameState, possible_moves, depth, player_type)
 
-    def get_best_move(self, gameState, move, depth, player_type, alpha, beta):
+    def get_best_move(self, gameState, move, depth, player_type):
         successor = gameState.generateSuccessor(player_type, move)
         successor_index = player_type + 1
         successor_depth = depth
@@ -300,47 +273,63 @@ class ExpectimaxAgent(MultiAgentSearchAgent):
             successor_index = 0
             successor_depth += 1
         
-        return self.alphabeta(successor, successor_depth, successor_index, alpha, beta)[0]
+        return self.expectimax(successor, successor_depth, successor_index)[0]
     
-    def max_player(self, gameState, possible_moves, depth, player_type, alpha, beta):
+    def max_player(self, gameState, possible_moves, depth, player_type):
         max_evaluation = float("-inf")
         for move in possible_moves:
-            evaluation = self.get_best_move(gameState, move, depth, player_type, alpha, beta)
+            evaluation = self.get_best_move(gameState, move, depth, player_type)
             if max_evaluation < evaluation:
                 max_evaluation = evaluation 
                 max_move = move
-
-            alpha = max(alpha, max_evaluation)
-            if max_evaluation > beta:
-               return max_evaluation, max_move
         
         return max_evaluation, max_move 
 
-    def avg_player(self, gameState, possible_moves, depth, player_type, alpha, beta):
+    def avg_player(self, gameState, possible_moves, depth, player_type):
         avg_evaluation = 0
+        avg_probability = 1/len(possible_moves)
         for move in possible_moves:
-            evaluation = self.get_best_move(gameState, move, depth, player_type, alpha, beta)
-            if min_evaluation > evaluation:
-                min_evaluation = evaluation
-                min_move = move
-
-            beta = min(beta, min_evaluation)
-            if min_evaluation < alpha:
-                return min_evaluation, min_move
-
-        return min_evaluation, min_move
+            evaluation = self.get_best_move(gameState, move, depth, player_type)
+            avg_evaluation += avg_probability * evaluation
+        return avg_evaluation, ""
 
 
 def betterEvaluationFunction(currentGameState: GameState):
-    """
-    Your extreme ghost-hunting, pellet-nabbing, food-gobbling, unstoppable
-    evaluation function (question 5).
-
-    DESCRIPTION: <write something here so we know what you did>
-    """
     "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+    def count_distance(a, b):
+        return [manhattanDistance(a, destination) for destination in b]
 
+    def set_score(ghost_position, food_distance, capsule_count):
+        ratio = {
+            'food': 100000,
+            'food_distance': 10000,
+            'capsule':1000
+        }
 
+        game_score = currentGameState.getScore()
+        if len(food_distance) > 0:
+            min_food_distance = min(food_distance)
+        
+        for ghost in ghost_position:
+            if ghost < 2:
+                min_food_distance = 1000000
+
+        score = sum(ratio["food_distance"]* 1/min_food_distance, 
+        ratio["food"] * len(food_distance),
+        ratio["capsule"] * capsule_count)
+
+        return score
+
+    pacman_position = currentGameState.getPacmanPosition()
+    ghost_position = currentGameState.getGhostPosition()
+    food_list = currentGameState.getFood().asList()
+    capsule_count = len(currentGameState.getCapsules())
+
+    food_distance = count_distance(pacman_position, food_list)
+    ghost_distance = count_distance(pacman_position, ghost_position)
+
+    return set_score
+
+    
 # Abbreviation
 better = betterEvaluationFunction
