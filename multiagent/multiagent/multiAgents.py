@@ -4,7 +4,7 @@
 # educational purposes provided that (1) you do not distribute or publish
 # solutions, (2) you retain this notice, and (3) you provide clear
 # attribution to UC Berkeley, including a link to http://ai.berkeley.edu.
-#
+# 
 # Attribution Information: The Pacman AI projects were developed at UC Berkeley.
 # The core projects and autograders were primarily created by John DeNero
 # (denero@cs.berkeley.edu) and Dan Klein (klein@cs.berkeley.edu).
@@ -12,14 +12,12 @@
 # Pieter Abbeel (pabbeel@cs.berkeley.edu).
 
 
-from operator import countOf
 from util import manhattanDistance
 from game import Directions
 import random, util
 
 from game import Agent
 from pacman import GameState
-
 
 class ReflexAgent(Agent):
     """
@@ -30,6 +28,7 @@ class ReflexAgent(Agent):
     it in any way you see fit, so long as you don't touch our method
     headers.
     """
+
 
     def getAction(self, gameState: GameState):
         """
@@ -46,11 +45,9 @@ class ReflexAgent(Agent):
         # Choose one of the best actions
         scores = [self.evaluationFunction(gameState, action) for action in legalMoves]
         bestScore = max(scores)
-        bestIndices = [
-            index for index in range(len(scores)) if scores[index] == bestScore
-        ]
-        chosenIndex = random.choice(bestIndices)  # Pick randomly among the best
-        print(chosenIndex)
+        bestIndices = [index for index in range(len(scores)) if scores[index] == bestScore]
+        chosenIndex = random.choice(bestIndices) # Pick randomly among the best
+
         "Add more of your code here if you want to"
 
         return legalMoves[chosenIndex]
@@ -76,8 +73,8 @@ class ReflexAgent(Agent):
         newFood = successorGameState.getFood()
         newGhostStates = successorGameState.getGhostStates()
         newScaredTimes = [ghostState.scaredTimer for ghostState in newGhostStates]
-        "*** YOUR CODE HERE ***"
 
+        "*** YOUR CODE HERE ***"
         agent_postion = successorGameState.getPacmanPosition()
         ghost_positions = successorGameState.getGhostPositions()
         # print(ghost_positions)
@@ -99,7 +96,6 @@ class ReflexAgent(Agent):
         # print(action_point)
         return action_point
 
-
 def scoreEvaluationFunction(currentGameState: GameState):
     """
     This default evaluation function just returns the score of the state.
@@ -109,7 +105,6 @@ def scoreEvaluationFunction(currentGameState: GameState):
     (not reflex agents).
     """
     return currentGameState.getScore()
-
 
 class MultiAgentSearchAgent(Agent):
     """
@@ -126,11 +121,10 @@ class MultiAgentSearchAgent(Agent):
     is another abstract class.
     """
 
-    def __init__(self, evalFn="scoreEvaluationFunction", depth="2"):
-        self.index = 0  # Pacman is always agent index 0
+    def __init__(self, evalFn = 'scoreEvaluationFunction', depth = '2'):
+        self.index = 0 # Pacman is always agent index 0
         self.evaluationFunction = util.lookup(evalFn, globals())
         self.depth = int(depth)
-
 
 class MinimaxAgent(MultiAgentSearchAgent):
     """
@@ -138,6 +132,28 @@ class MinimaxAgent(MultiAgentSearchAgent):
     """
 
     def getAction(self, gameState: GameState):
+        """
+        Returns the minimax action from the current gameState using self.depth
+        and self.evaluationFunction.
+
+        Here are some method calls that might be useful when implementing minimax.
+
+        gameState.getLegalActions(agentIndex):
+        Returns a list of legal actions for an agent
+        agentIndex=0 means Pacman, ghosts are >= 1
+
+        gameState.generateSuccessor(agentIndex, action):
+        Returns the successor game state after an agent takes an action
+
+        gameState.getNumAgents():
+        Returns the total number of agents in the game
+
+        gameState.isWin():
+        Returns whether or not the game state is a winning state
+
+        gameState.isLose():
+        Returns whether or not the game state is a losing state
+        """
         "*** YOUR CODE HERE ***"
         result = self.minimax(gameState, 0, 0)
         return result[1]
@@ -183,14 +199,15 @@ class MinimaxAgent(MultiAgentSearchAgent):
 
         return min_evaluation, min_move
 
-
-
 class AlphaBetaAgent(MultiAgentSearchAgent):
     """
-    Your alphabeta agent with alpha-beta pruning (question 3)
+    Your minimax agent with alpha-beta pruning (question 3)
     """
 
     def getAction(self, gameState: GameState):
+        """
+        Returns the minimax action using self.depth and self.evaluationFunction
+        """
         "*** YOUR CODE HERE ***"
         result = self.alphabeta(gameState, 0, 0, float("-inf"), float("inf"))
         return result[1]
@@ -246,10 +263,16 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
 
 class ExpectimaxAgent(MultiAgentSearchAgent):
     """
-    Your expectimax agent with alpha-beta pruning (question 3)
+      Your expectimax agent (question 4)
     """
 
     def getAction(self, gameState: GameState):
+        """
+        Returns the expectimax action using self.depth and self.evaluationFunction
+
+        All ghosts should be modeled as choosing uniformly at random from their
+        legal moves.
+        """
         "*** YOUR CODE HERE ***"
         result = self.expectimax(gameState, 0, 0)
         return result[1]
@@ -293,8 +316,13 @@ class ExpectimaxAgent(MultiAgentSearchAgent):
             avg_evaluation += avg_probability * evaluation
         return avg_evaluation, ""
 
-
 def betterEvaluationFunction(currentGameState: GameState):
+    """
+    Your extreme ghost-hunting, pellet-nabbing, food-gobbling, unstoppable
+    evaluation function (question 5).
+
+    DESCRIPTION: <write something here so we know what you did>
+    """
     "*** YOUR CODE HERE ***"
     def count_distance(a, b):
         return [manhattanDistance(a, destination) for destination in b]
@@ -328,8 +356,7 @@ def betterEvaluationFunction(currentGameState: GameState):
     food_distance = count_distance(pacman_position, food_list)
     ghost_distance = count_distance(pacman_position, ghost_position)
 
-    return set_score
+    return set_score(ghost_position, food_distance, capsule_count)
 
-    
 # Abbreviation
 better = betterEvaluationFunction
