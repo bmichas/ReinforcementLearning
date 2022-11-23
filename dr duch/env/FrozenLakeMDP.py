@@ -49,7 +49,7 @@ class frozenLake:
 
     def is_terminal(self, state):
         """ return true if state is terminal or false otherwise """
-        x, y = self.__state_to_xy(state)
+        x, y = self.state_to_xy(state)
         if MAPS[self.type][y][x] in ['G', 'H']:
             return True
         return False
@@ -71,11 +71,11 @@ class frozenLake:
         """ return the reward after taking action in state and landing on next_state"""
         assert action in self.get_possible_actions(
             state), "cannot do action %s from state %s" % (action, state)
-        x, y = self.__state_to_xy(next_state)
+        x, y = self.state_to_xy(next_state)
         return 1 if MAPS[self.type][y][x] == 'G' else 0
 
     def step(self, action):
-        current_x, current_y = self.__state_to_xy(self._current_state)
+        current_x, current_y = self.state_to_xy(self._current_state)
         if action == LEFT and current_x > 0:
             current_x -= 1
         elif action == RIGHT and current_x < len(MAPS[self.type][0]) - 1:
@@ -90,5 +90,5 @@ class frozenLake:
         return self._current_state, self.get_reward(prev_state, action, self._current_state), \
                self.is_terminal(self._current_state), None
 
-    def __state_to_xy(self, state):
+    def state_to_xy(self, state):
         return state % len(MAPS[self.type][0]), state // len(MAPS[self.type][0])
