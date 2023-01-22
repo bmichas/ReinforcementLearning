@@ -75,7 +75,7 @@ class MichasPacman(Pacman):
         self.alpha = alpha
         self.epsilon = epsilon
         self.discount = discount
-        self.weights = [0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5]
+        self.weights = [0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5]
         self.print_status = print_status
         self.reward = 0
         self.break_point = break_point
@@ -105,11 +105,7 @@ class MichasPacman(Pacman):
 
 
     def make_move(self, game_state, invalid_move=False) -> Direction:
-        can_move = False
-        while not can_move:
-            action = self.get_action(game_state)
-            can_move = can_move_in_direction(game_state.you['position'], action, game_state.walls, game_state.board_size)
-            
+        action = self.get_action(game_state)
         next_state = direction_to_new_position(game_state.you['position'], action)
         self.update(game_state, action, self.reward, next_state)
         return action  # it will make some valid move at some point
@@ -148,6 +144,9 @@ class MichasPacman(Pacman):
             if distance < min_distance:
                 min_distance = distance
         
+        if min_distance == float("inf"):
+            return 0
+        
         return min_distance
 
 
@@ -159,19 +158,21 @@ class MichasPacman(Pacman):
             if distance < min_distance:
                 min_distance = distance
 
+        if min_distance == float("inf"):
+            return 0
+
         return min_distance
 
     
     def get_value_function(self, game_state, action):
         player_position = direction_to_new_position(game_state.you['position'], action)
-        value_function = [self.get_closes_distance_enemies(player_position, game_state.ghosts),
-                          self.get_closes_distance_enemies(player_position, game_state.other_pacmans),
-                          self.get_closes_distance_points(player_position, game_state.points),
-                          self.get_closes_distance_points(player_position, game_state.big_points),
-                          self.get_closes_distance_points(player_position, game_state.phasing_points),
-                          self.get_closes_distance_points(player_position, game_state.double_points),
-                          self.get_closes_distance_points(player_position, game_state.indestructible_points),
-                          self.get_closes_distance_points(player_position, game_state.big_big_points)]
+        value_function = [self.get_closes_distance_enemies(player_position, game_state.ghosts)/255,
+                          self.get_closes_distance_enemies(player_position, game_state.other_pacmans)/255,
+                          self.get_closes_distance_points(player_position, game_state.points)/255,
+                          self.get_closes_distance_points(player_position, game_state.big_points)/255,
+                          self.get_closes_distance_points(player_position, game_state.phasing_points)/255,
+                          self.get_closes_distance_points(player_position, game_state.double_points)/255,
+                          self.get_closes_distance_points(player_position, game_state.indestructible_points)/255]
 
         return value_function
 
@@ -182,22 +183,24 @@ class MichasPacman(Pacman):
 
 
     def update(self, game_state, action, reward, next_state):
+        print('reward', reward)
         next_game_state = self.set_next_game_state(game_state, next_state)
         gamma = self.discount
         learning_rate = self.alpha
         difference = (reward + gamma * self.get_value(next_game_state)) - self.get_qvalue(game_state, action)
-        print(difference)
-        print(self.get_value(next_game_state))
-        print(self.get_qvalue(game_state, action))
         value_function = self.get_value_function(game_state, action)
-        print(value_function)
         for i in range(len(self.weights)):
             self.weights[i] += learning_rate * difference * value_function[i]
-
-
+        
 
     def get_best_action(self, game_state):
-        possible_actions = list(Direction)
+        actions = list(Direction)
+        possible_actions = []
+        for action in actions:
+            can_move = can_move_in_direction(game_state.you['position'], action, game_state.walls, game_state.board_size)
+            if can_move:
+                possible_actions.append(action)
+                
         if len(possible_actions) == 0:
             return None
 
