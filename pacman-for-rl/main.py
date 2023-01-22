@@ -42,6 +42,6 @@ board_big = ["wwwwwwwwwwwwwwwwwwwwwwwwwwww",
 
 while True:
     game = Game(board_big, [Ghosts.RED, Ghosts.PINK, Ghosts.BLUE, Ghosts.ORANGE],
-                [RandomPacman(False), RandomPacman(False), RandomPacman(False), MichasPacman(alpha = 0.5, epsilon = 0.01, discount = 0.99)], True)
+                [RandomPacman(False), RandomPacman(False), RandomPacman(False), MichasPacman(alpha = 0.5, epsilon = 0.01, discount = 0.99, break_point=100)], True)
     # print(game.run())
     game.run()
