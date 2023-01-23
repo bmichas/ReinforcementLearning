@@ -76,37 +76,49 @@ class MichasPacman(Pacman):
         self.alpha = alpha
         self.epsilon = epsilon
         self.discount = discount
-        self.weights = [random.uniform(-1, 1), random.uniform(-1, 1),random.uniform(-1, 1),random.uniform(-1, 1), random.uniform(-1, 1), random.uniform(-1, 1), random.uniform(-1, 1),]
+        self.weights = [random.uniform(-1, 1), random.uniform(-1, 1),random.uniform(-1, 1),random.uniform(-1, 1), random.uniform(-1, 1), random.uniform(-1, 1), random.uniform(-1, 1),random.uniform(-1, 1)]
         self.print_status = print_status
         self.reward = 0
-        # self.width, self.height = board_size
+        self.last_action = None
+        self.last_game_state = None
+
 
 
     def give_points(self, points):
         if self.print_status:
-            print(f"Michas pacman got {points} points")
-        self.reward = points * 10
+            # print(f"Michas pacman got {points} points")
+            pass
+
+        self.reward = points * 2
         self.point_counter += points
 
 
     def on_death(self):
+        reward = -1
+        next_state = direction_to_new_position(self.last_game_state.you['position'], self.last_action)
+        self.update(self.last_game_state, self.last_action, reward, next_state)
         if self.print_status:
             print(f"Michas pacman dead with {self.point_counter}")
-        
-        self.reward = -100 
+            pass
+
+        self.point_counter = 0        
+        # self.reward = -100 
 
 
     def on_win(self, result: Dict["Pacman", int]):
         if self.print_status:
-            print("Michas pacman won")
+            # print("Michas pacman won")
+            pass
 
-        self.reward = 300
+        # self.reward = 300
 
 
     def make_move(self, game_state, invalid_move=False) -> Direction:
         action = self.get_action(game_state)
         next_state = direction_to_new_position(game_state.you['position'], action)
         self.update(game_state, action, self.reward, next_state)
+        self.last_action = action
+        self.last_game_state = game_state
         return action  # it will make some valid move at some point
         
 
@@ -171,19 +183,20 @@ class MichasPacman(Pacman):
                           1 / (self.get_closes_distance_points(player_position, game_state.big_points) + 1),
                           1 / (self.get_closes_distance_points(player_position, game_state.phasing_points) + 1),
                           1 / (self.get_closes_distance_points(player_position, game_state.double_points) + 1),
-                          1 / (self.get_closes_distance_points(player_position, game_state.indestructible_points) + 1)]
+                          1 / (self.get_closes_distance_points(player_position, game_state.indestructible_points) + 1),
+                          1 / (self.get_closes_distance_points(player_position, game_state.big_big_points) + 1)]
         
 
         return value_function
 
 
     def set_next_game_state(self, game_state ,next_state):
+        
         game_state.you['position'] = next_state
         return game_state
 
 
     def update(self, game_state, action, reward, next_state):
-        print('reward', reward)
         next_game_state = self.set_next_game_state(game_state, next_state)
         gamma = self.discount
         learning_rate = self.alpha

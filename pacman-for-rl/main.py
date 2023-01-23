@@ -2,6 +2,8 @@ from pacman.Ghost import Ghosts
 from pacman.Pacman import RandomPacman, MichasPacman
 from pacman.Game import Game
 
+import random
+
 board = ["*   g",
          "gwww ",
          " w*  ",
@@ -40,26 +42,32 @@ board_big = ["wwwwwwwwwwwwwwwwwwwwwwwwwwww",
              "wp************************pw",
              "wwwwwwwwwwwwwwwwwwwwwwwwwwww"]
 
-learnig_epoch = 100
-game_epoch = 100
-agent = MichasPacman(alpha = 0.5, epsilon = 0.01, discount = 0.99)
-# learnig_agents = [agent, agent, agent, agent]
-game_agents = [RandomPacman(False), RandomPacman(False), RandomPacman(False), agent]
-game = Game(board_big, [Ghosts.RED, Ghosts.PINK, Ghosts.BLUE, Ghosts.ORANGE],
-                game_agents, True, delay=100)
-while True:
-    print(game.run())
+learnig_epoch = 15
+game_epoch = 10
+agent = MichasPacman(alpha = 0.5, epsilon = 0.01, discount = 0.99, print_status=True)
+agents = [RandomPacman(False), RandomPacman(False), RandomPacman(False), agent]
+print(agent.weights)
+for i in range(learnig_epoch):
+    print('learn:', i+1)
+    new_agents = agents.copy()
+    random.shuffle(new_agents)
+    game = Game(board_big, [Ghosts.RED, Ghosts.PINK, Ghosts.BLUE, Ghosts.ORANGE], new_agents, True, delay=100)
+    game.run()
+    print(agent.weights)
     
+print('=======Game=======')
+agent.turn_off_learning()
+for i in range(game_epoch):
+    print('play:', i+1)
+    new_agents = agents.copy()
+    random.shuffle(new_agents)
+    if i == game_epoch - 1:
+        game = Game(board_big, [Ghosts.RED, Ghosts.PINK, Ghosts.BLUE, Ghosts.ORANGE], new_agents, True, delay=100)
+        game.run()
+        break
 
-# agent.turn_off_learning()
-# game.players = [RandomPacman(False), RandomPacman(False), RandomPacman(False), agent]
+    game = Game(board_big, [Ghosts.RED, Ghosts.PINK, Ghosts.BLUE, Ghosts.ORANGE], new_agents, False, delay=1)
+    game.run()
 
-
-# for i in range(game_epoch):
-#     if i == game_epoch - 1:
-#         game.delay = 100
-#         game.display_mode_on = True
-
-#     print(game.run())
-
+agent.weights
 
