@@ -4,6 +4,7 @@ from typing import Dict
 import math
 import numpy as np
 from scipy.spatial import distance
+import random
 
 from .Direction import Direction
 from .GameState import GameState
@@ -70,38 +71,36 @@ class RandomPacman(Pacman):
 
 
 class MichasPacman(Pacman):
-    def __init__(self,alpha, epsilon, discount, break_point, print_status=True) -> None:
+    def __init__(self,alpha, epsilon, discount, print_status=True) -> None:
         self.point_counter = 0
         self.alpha = alpha
         self.epsilon = epsilon
         self.discount = discount
-        self.weights = [0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5]
+        self.weights = [random.uniform(-1, 1), random.uniform(-1, 1),random.uniform(-1, 1),random.uniform(-1, 1), random.uniform(-1, 1), random.uniform(-1, 1), random.uniform(-1, 1),]
         self.print_status = print_status
         self.reward = 0
-        self.break_point = break_point
         # self.width, self.height = board_size
 
 
     def give_points(self, points):
         if self.print_status:
             print(f"Michas pacman got {points} points")
-        self.reward = points
+        self.reward = points * 10
         self.point_counter += points
 
 
     def on_death(self):
         if self.print_status:
             print(f"Michas pacman dead with {self.point_counter}")
-
-        self.break_point -= 1
-        if self.break_point == 0:
-            self.turn_off_learning()
-
+        
+        self.reward = -100 
 
 
     def on_win(self, result: Dict["Pacman", int]):
         if self.print_status:
             print("Michas pacman won")
+
+        self.reward = 300
 
 
     def make_move(self, game_state, invalid_move=False) -> Direction:
@@ -145,7 +144,7 @@ class MichasPacman(Pacman):
                 min_distance = distance
         
         if min_distance == float("inf"):
-            return 0
+            min_distance = 0
         
         return min_distance
 
@@ -158,21 +157,22 @@ class MichasPacman(Pacman):
             if distance < min_distance:
                 min_distance = distance
 
-        if min_distance == float("inf"):
-            return 0
+        if min_distance == float("inf"): 
+            min_distance = 0
 
         return min_distance
 
     
     def get_value_function(self, game_state, action):
         player_position = direction_to_new_position(game_state.you['position'], action)
-        value_function = [self.get_closes_distance_enemies(player_position, game_state.ghosts)/255,
-                          self.get_closes_distance_enemies(player_position, game_state.other_pacmans)/255,
-                          self.get_closes_distance_points(player_position, game_state.points)/255,
-                          self.get_closes_distance_points(player_position, game_state.big_points)/255,
-                          self.get_closes_distance_points(player_position, game_state.phasing_points)/255,
-                          self.get_closes_distance_points(player_position, game_state.double_points)/255,
-                          self.get_closes_distance_points(player_position, game_state.indestructible_points)/255]
+        value_function = [1 / (self.get_closes_distance_enemies(player_position, game_state.ghosts) + 1),
+                          1 / (self.get_closes_distance_enemies(player_position, game_state.other_pacmans) + 1),
+                          1 / (self.get_closes_distance_points(player_position, game_state.points) + 1),
+                          1 / (self.get_closes_distance_points(player_position, game_state.big_points) + 1),
+                          1 / (self.get_closes_distance_points(player_position, game_state.phasing_points) + 1),
+                          1 / (self.get_closes_distance_points(player_position, game_state.double_points) + 1),
+                          1 / (self.get_closes_distance_points(player_position, game_state.indestructible_points) + 1)]
+        
 
         return value_function
 

@@ -40,8 +40,26 @@ board_big = ["wwwwwwwwwwwwwwwwwwwwwwwwwwww",
              "wp************************pw",
              "wwwwwwwwwwwwwwwwwwwwwwwwwwww"]
 
+learnig_epoch = 100
+game_epoch = 100
+agent = MichasPacman(alpha = 0.5, epsilon = 0.01, discount = 0.99)
+# learnig_agents = [agent, agent, agent, agent]
+game_agents = [RandomPacman(False), RandomPacman(False), RandomPacman(False), agent]
+game = Game(board_big, [Ghosts.RED, Ghosts.PINK, Ghosts.BLUE, Ghosts.ORANGE],
+                game_agents, True, delay=100)
 while True:
-    game = Game(board_big, [Ghosts.RED, Ghosts.PINK, Ghosts.BLUE, Ghosts.ORANGE],
-                [RandomPacman(False), RandomPacman(False), RandomPacman(False), MichasPacman(alpha = 0.5, epsilon = 0.01, discount = 0.99, break_point=100)], True, delay=100)
-    # print(game.run())
-    game.run()
+    print(game.run())
+    
+
+# agent.turn_off_learning()
+# game.players = [RandomPacman(False), RandomPacman(False), RandomPacman(False), agent]
+
+
+# for i in range(game_epoch):
+#     if i == game_epoch - 1:
+#         game.delay = 100
+#         game.display_mode_on = True
+
+#     print(game.run())
+
+
