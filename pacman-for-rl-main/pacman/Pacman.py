@@ -76,7 +76,8 @@ class MichasPacman(Pacman):
         self.alpha = alpha
         self.epsilon = epsilon
         self.discount = discount
-        self.weights = [random.uniform(-1, 1), random.uniform(-1, 1),random.uniform(-1, 1),random.uniform(-1, 1), random.uniform(-1, 1), random.uniform(-1, 1), random.uniform(-1, 1),random.uniform(-1, 1)]
+        # self.weights = [random.uniform(-1, 1), random.uniform(-1, 1),random.uniform(-1, 1),random.uniform(-1, 1), random.uniform(-1, 1), random.uniform(-1, 1), random.uniform(-1, 1),random.uniform(-1, 1)]
+        self.weights = [random.uniform(-1, 1), random.uniform(-1, 1), random.uniform(-1, 1), random.uniform(-1, 1)]
         self.print_status = print_status
         self.reward = 0
         self.last_action = None
@@ -89,19 +90,18 @@ class MichasPacman(Pacman):
             # print(f"Michas pacman got {points} points")
             pass
 
-        self.reward = points * 2
+        self.reward += points*2
         self.point_counter += points
 
 
     def on_death(self):
-        reward = -1
-        next_state = direction_to_new_position(self.last_game_state.you['position'], self.last_action)
-        self.update(self.last_game_state, self.last_action, reward, next_state)
+        # reward = -1
+        # next_state = direction_to_new_position(self.last_game_state.you['position'], self.last_action)
+        # self.update(self.last_game_state, self.last_action, reward, next_state)
         if self.print_status:
             print(f"Michas pacman dead with {self.point_counter}")
             pass
-
-        self.point_counter = 0        
+       
         # self.reward = -100 
 
 
@@ -112,18 +112,36 @@ class MichasPacman(Pacman):
 
         # self.reward = 300
 
+    def check_reward(self, game_state, action):
+        player_position = direction_to_new_position(game_state.you['position'], action, game_state.board_size)
+        distance_ghost = self.get_closes_distance_enemies(player_position, game_state.ghosts)
+        distance_pacman = self.get_closes_distance_enemies(player_position, game_state.other_pacmans)
+        if distance_ghost < 5 or distance_pacman < 5:
+            self.reward -= 10
+        
+        if distance_ghost >= 5 or distance_pacman >= 5:
+            self.reward += 2
+            
+    def norm(self, data):
+        return (data - np.min(data)) / (np.max(data) - np.min(data))
+
 
     def make_move(self, game_state, invalid_move=False) -> Direction:
         action = self.get_action(game_state)
-        next_state = direction_to_new_position(game_state.you['position'], action)
+        next_state = direction_to_new_position(game_state.you['position'], action, game_state.board_size)
+        self.check_reward(game_state, action)
+        # print(self.reward)
         self.update(game_state, action, self.reward, next_state)
         self.last_action = action
         self.last_game_state = game_state
+        self.reward = 0
+        # self.weights = self.norm(self.weights)
         return action  # it will make some valid move at some point
         
 
-    def get_manhatan(self, start, end):
-        return distance.cityblock(start, end)
+    def get_distance(self, start, end):
+        # return distance.cityblock(start, end)
+        return math.dist(start, end)
 
 
     def get_qvalue(self, game_state, action):
@@ -151,7 +169,7 @@ class MichasPacman(Pacman):
     def get_closes_distance_points(self, player_position, points):
         min_distance = float("inf")
         for point in points:
-            distance = self.get_manhatan((player_position.x, player_position.y), (point.x, point.y))
+            distance = self.get_distance((player_position.x, player_position.y), (point.x, point.y))
             if distance < min_distance:
                 min_distance = distance
         
@@ -165,7 +183,7 @@ class MichasPacman(Pacman):
         min_distance = float("inf")
         for enemy in enemies:
             enemy_position = enemy['position']
-            distance = self.get_manhatan((player_position.x, player_position.y), (enemy_position.x, enemy_position.y))
+            distance = self.get_distance((player_position.x, player_position.y), (enemy_position.x, enemy_position.y))
             if distance < min_distance:
                 min_distance = distance
 
@@ -173,18 +191,25 @@ class MichasPacman(Pacman):
             min_distance = 0
 
         return min_distance
+    
+
+    def check_npc_status(self, game_state):
+        if game_state.ghosts[0]['is_eatable']:
+            return 1
+
+        return -1
 
     
     def get_value_function(self, game_state, action):
-        player_position = direction_to_new_position(game_state.you['position'], action)
+        player_position = direction_to_new_position(game_state.you['position'], action, game_state.board_size)
         value_function = [1 / (self.get_closes_distance_enemies(player_position, game_state.ghosts) + 1),
                           1 / (self.get_closes_distance_enemies(player_position, game_state.other_pacmans) + 1),
                           1 / (self.get_closes_distance_points(player_position, game_state.points) + 1),
-                          1 / (self.get_closes_distance_points(player_position, game_state.big_points) + 1),
-                          1 / (self.get_closes_distance_points(player_position, game_state.phasing_points) + 1),
-                          1 / (self.get_closes_distance_points(player_position, game_state.double_points) + 1),
-                          1 / (self.get_closes_distance_points(player_position, game_state.indestructible_points) + 1),
-                          1 / (self.get_closes_distance_points(player_position, game_state.big_big_points) + 1)]
+                          self.check_npc_status(game_state),]
+                        #   1 / (self.get_closes_distance_points(player_position, game_state.phasing_points) + 1),
+                        #   1 / (self.get_closes_distance_points(player_position, game_state.double_points) + 1),
+                        #   1 / (self.get_closes_distance_points(player_position, game_state.indestructible_points) + 1),
+                        #   1 / (self.get_closes_distance_points(player_position, game_state.big_big_points) + 1)]
         
 
         return value_function

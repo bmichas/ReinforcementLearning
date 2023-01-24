@@ -42,32 +42,40 @@ board_big = ["wwwwwwwwwwwwwwwwwwwwwwwwwwww",
              "wp************************pw",
              "wwwwwwwwwwwwwwwwwwwwwwwwwwww"]
 
-learnig_epoch = 15
-game_epoch = 10
-agent = MichasPacman(alpha = 0.5, epsilon = 0.01, discount = 0.99, print_status=True)
+learnig_epoch = 50
+delay = 1
+visible = True
+avg_points = 0
+
+agent = MichasPacman(alpha = 0.01, epsilon = 0.01, discount = 0.99, print_status=True)
 agents = [RandomPacman(False), RandomPacman(False), RandomPacman(False), agent]
-print(agent.weights)
+print('weights', agent.weights)
 for i in range(learnig_epoch):
     print('learn:', i+1)
     new_agents = agents.copy()
     random.shuffle(new_agents)
-    game = Game(board_big, [Ghosts.RED, Ghosts.PINK, Ghosts.BLUE, Ghosts.ORANGE], new_agents, True, delay=100)
+    game = Game(board_big, [Ghosts.RED, Ghosts.PINK, Ghosts.BLUE, Ghosts.ORANGE], new_agents, visible, delay=delay)
     game.run()
+    agent.point_counter = 0
     print(agent.weights)
-    
-print('=======Game=======')
+
 agent.turn_off_learning()
-for i in range(game_epoch):
-    print('play:', i+1)
+print('=======Game=======')
+for i in range(learnig_epoch):
+    print('Game:', i+1)
     new_agents = agents.copy()
     random.shuffle(new_agents)
-    if i == game_epoch - 1:
-        game = Game(board_big, [Ghosts.RED, Ghosts.PINK, Ghosts.BLUE, Ghosts.ORANGE], new_agents, True, delay=100)
+    if i == learnig_epoch - 1:
+        game = Game(board_big, [Ghosts.RED, Ghosts.PINK, Ghosts.BLUE, Ghosts.ORANGE], new_agents, visible, delay=100)
         game.run()
+        avg_points += agent.point_counter
         break
 
-    game = Game(board_big, [Ghosts.RED, Ghosts.PINK, Ghosts.BLUE, Ghosts.ORANGE], new_agents, False, delay=1)
-    game.run()
+    else:
+        game = Game(board_big, [Ghosts.RED, Ghosts.PINK, Ghosts.BLUE, Ghosts.ORANGE], new_agents, visible, delay=delay)
+        game.run()
+        avg_points += agent.point_counter
+        agent.point_counter = 0
 
-agent.weights
-
+print('weights', agent.weights)
+print('AVG score:', avg_points/learnig_epoch)
