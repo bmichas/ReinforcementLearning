@@ -45,8 +45,8 @@ board_big = ["wwwwwwwwwwwwwwwwwwwwwwwwwwww",
              "wp************************pw",
              "wwwwwwwwwwwwwwwwwwwwwwwwwwww"]
 
-name_game = '_games_stats_randomW.xlsx'
-best_pacman = 10
+name_game = '_games_stats.xlsx'
+best_pacman = 100
 learnig_epoch = 20
 games_epoch = 100
 delay = 1
