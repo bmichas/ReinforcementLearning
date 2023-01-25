@@ -45,6 +45,7 @@ board_big = ["wwwwwwwwwwwwwwwwwwwwwwwwwwww",
              "wp************************pw",
              "wwwwwwwwwwwwwwwwwwwwwwwwwwww"]
 
+name_game = '_games_stats_randomW.xlsx'
 best_pacman = 10
 learnig_epoch = 20
 games_epoch = 100
@@ -67,6 +68,7 @@ for epoch in tqdm(range(best_pacman)):
 
     agent.turn_off_learning()
     # print('=======Game=======')
+    print(' Weights before game: ', agent.weights)
     for game_epoch in range(games_epoch):
         # print('Game:', game_epoch+1)
         new_agents = agents.copy()
@@ -84,7 +86,7 @@ for epoch in tqdm(range(best_pacman)):
             agent.point_counter = 0
     game_stats = [epoch, agent.weights, avg_points/games_epoch]
     games_stats.append(game_stats)
-    print(game_stats)
+    print('Stats after the Game: ', game_stats)
     # print('weights', agent.weights)
     # print('AVG score:', avg_points/games_epoch)
 
@@ -97,7 +99,7 @@ for game_stats in games_stats:
 df = pd.DataFrame(games_stats, columns =['Epoch', 'Weights', 'AVG'])
 print(df)
 
-name_game = '_games_stats.xlsx'
+
 timestr = time.strftime("%Y%m%d-%H%M%S")
 name = timestr + name_game
 df.to_excel(name) 

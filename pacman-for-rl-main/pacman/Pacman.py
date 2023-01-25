@@ -77,8 +77,8 @@ class MichasPacman(Pacman):
         self.epsilon = epsilon
         self.discount = discount
         # self.weights = [random.uniform(-1, 1), random.uniform(-1, 1),random.uniform(-1, 1),random.uniform(-1, 1), random.uniform(-1, 1), random.uniform(-1, 1), random.uniform(-1, 1),random.uniform(-1, 1)]
-        self.weights = [-19.56, -77.56, 21.89, 65.88]
-        # self.weights = [random.uniform(-1, 1), random.uniform(-1, 1), random.uniform(-1, 1), random.uniform(-1, 1)]
+        # self.weights = [-19.56, -77.56, 21.89, 65.88]
+        self.weights = [random.uniform(-1, 1), random.uniform(-1, 1), random.uniform(-1, 1), random.uniform(-1, 1)]
         self.print_status = print_status
         self.reward = 0
         self.last_action = None
