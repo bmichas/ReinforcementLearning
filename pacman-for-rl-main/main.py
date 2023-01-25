@@ -1,6 +1,9 @@
 from pacman.Ghost import Ghosts
 from pacman.Pacman import RandomPacman, MichasPacman
 from pacman.Game import Game
+import pandas as pd
+from tqdm import tqdm
+import time
 
 import random
 
@@ -42,40 +45,59 @@ board_big = ["wwwwwwwwwwwwwwwwwwwwwwwwwwww",
              "wp************************pw",
              "wwwwwwwwwwwwwwwwwwwwwwwwwwww"]
 
-learnig_epoch = 50
+best_pacman = 10
+learnig_epoch = 20
+games_epoch = 100
 delay = 1
 visible = True
-avg_points = 0
 
-agent = MichasPacman(alpha = 0.01, epsilon = 0.01, discount = 0.99, print_status=True)
-agents = [RandomPacman(False), RandomPacman(False), RandomPacman(False), agent]
-print('weights', agent.weights)
-for i in range(learnig_epoch):
-    print('learn:', i+1)
-    new_agents = agents.copy()
-    random.shuffle(new_agents)
-    game = Game(board_big, [Ghosts.RED, Ghosts.PINK, Ghosts.BLUE, Ghosts.ORANGE], new_agents, visible, delay=delay)
-    game.run()
-    agent.point_counter = 0
-    print(agent.weights)
-
-agent.turn_off_learning()
-print('=======Game=======')
-for i in range(learnig_epoch):
-    print('Game:', i+1)
-    new_agents = agents.copy()
-    random.shuffle(new_agents)
-    if i == learnig_epoch - 1:
-        game = Game(board_big, [Ghosts.RED, Ghosts.PINK, Ghosts.BLUE, Ghosts.ORANGE], new_agents, visible, delay=100)
-        game.run()
-        avg_points += agent.point_counter
-        break
-
-    else:
+games_stats = []
+for epoch in tqdm(range(best_pacman)):
+    agent = MichasPacman(alpha = 0.01, epsilon = 0.01, discount = 0.99, print_status=False)
+    agents = [RandomPacman(False), RandomPacman(False), RandomPacman(False), agent]
+    avg_points = 0
+    for leard_epoch in range(learnig_epoch):
+        # print('learn:', leard_epoch+1)
+        new_agents = agents.copy()
+        random.shuffle(new_agents)
         game = Game(board_big, [Ghosts.RED, Ghosts.PINK, Ghosts.BLUE, Ghosts.ORANGE], new_agents, visible, delay=delay)
         game.run()
-        avg_points += agent.point_counter
         agent.point_counter = 0
+        # print(agent.weights)
 
-print('weights', agent.weights)
-print('AVG score:', avg_points/learnig_epoch)
+    agent.turn_off_learning()
+    # print('=======Game=======')
+    for game_epoch in range(games_epoch):
+        # print('Game:', game_epoch+1)
+        new_agents = agents.copy()
+        random.shuffle(new_agents)
+        if game_epoch == game_epoch - 1:
+            game = Game(board_big, [Ghosts.RED, Ghosts.PINK, Ghosts.BLUE, Ghosts.ORANGE], new_agents, False, delay=100)
+            game.run()
+            avg_points += agent.point_counter
+            break
+
+        else:
+            game = Game(board_big, [Ghosts.RED, Ghosts.PINK, Ghosts.BLUE, Ghosts.ORANGE], new_agents, visible, delay=delay)
+            game.run()
+            avg_points += agent.point_counter
+            agent.point_counter = 0
+    game_stats = [epoch, agent.weights, avg_points/games_epoch]
+    games_stats.append(game_stats)
+    print(game_stats)
+    # print('weights', agent.weights)
+    # print('AVG score:', avg_points/games_epoch)
+
+print('======================================================')
+print('======================GAME STATS======================')
+print('======================================================')
+for game_stats in games_stats:
+    print(game_stats)
+
+df = pd.DataFrame(games_stats, columns =['Epoch', 'Weights', 'AVG'])
+print(df)
+
+name_game = '_games_stats.xlsx'
+timestr = time.strftime("%Y%m%d-%H%M%S")
+name = timestr + name_game
+df.to_excel(name) 

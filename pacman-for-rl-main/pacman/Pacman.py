@@ -77,7 +77,8 @@ class MichasPacman(Pacman):
         self.epsilon = epsilon
         self.discount = discount
         # self.weights = [random.uniform(-1, 1), random.uniform(-1, 1),random.uniform(-1, 1),random.uniform(-1, 1), random.uniform(-1, 1), random.uniform(-1, 1), random.uniform(-1, 1),random.uniform(-1, 1)]
-        self.weights = [random.uniform(-1, 1), random.uniform(-1, 1), random.uniform(-1, 1), random.uniform(-1, 1)]
+        self.weights = [-19.56, -77.56, 21.89, 65.88]
+        # self.weights = [random.uniform(-1, 1), random.uniform(-1, 1), random.uniform(-1, 1), random.uniform(-1, 1)]
         self.print_status = print_status
         self.reward = 0
         self.last_action = None
@@ -117,10 +118,10 @@ class MichasPacman(Pacman):
         distance_ghost = self.get_closes_distance_enemies(player_position, game_state.ghosts)
         distance_pacman = self.get_closes_distance_enemies(player_position, game_state.other_pacmans)
         if distance_ghost < 5 or distance_pacman < 5:
-            self.reward -= 10
+            self.reward -= 20
         
         if distance_ghost >= 5 or distance_pacman >= 5:
-            self.reward += 2
+            self.reward += 5
             
     def norm(self, data):
         return (data - np.min(data)) / (np.max(data) - np.min(data))
