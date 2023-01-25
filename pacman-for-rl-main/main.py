@@ -46,7 +46,7 @@ board_big = ["wwwwwwwwwwwwwwwwwwwwwwwwwwww",
              "wwwwwwwwwwwwwwwwwwwwwwwwwwww"]
 
 name_game = '_games_stats.xlsx'
-best_pacman = 100
+best_pacman = 1000
 learnig_epoch = 20
 games_epoch = 100
 delay = 1
