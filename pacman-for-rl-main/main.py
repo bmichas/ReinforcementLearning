@@ -57,7 +57,7 @@ for epoch in tqdm(range(best_pacman)):
     agent = MichasPacman(alpha = 0.01, epsilon = 0.01, discount = 0.99, print_status=False)
     agents = [RandomPacman(False), RandomPacman(False), RandomPacman(False), agent]
     avg_points = 0
-    for leard_epoch in range(learnig_epoch):
+    for leard_epoch in tqdm(range(learnig_epoch)):
         # print('learn:', leard_epoch+1)
         new_agents = agents.copy()
         random.shuffle(new_agents)
@@ -68,8 +68,8 @@ for epoch in tqdm(range(best_pacman)):
 
     agent.turn_off_learning()
     # print('=======Game=======')
-    print(' Weights before game: ', agent.weights)
-    for game_epoch in range(games_epoch):
+    print('\n'+'Weights before game: ', agent.weights)
+    for game_epoch in tqdm(range(games_epoch)):
         # print('Game:', game_epoch+1)
         new_agents = agents.copy()
         random.shuffle(new_agents)
@@ -85,8 +85,17 @@ for epoch in tqdm(range(best_pacman)):
             avg_points += agent.point_counter
             agent.point_counter = 0
     game_stats = [epoch, agent.weights, avg_points/games_epoch]
+    timestr = time.strftime("%Y%m%d-%H%M%S")
+    avg_score = str(avg_points/games_epoch)
+    name = avg_score + '_' + timestr + '.txt'
+    file = open('logs/'+name, 'w')
+    for stat in game_stats:
+        file.write(str(stat)+"\n")
+
+    file.close()
+    
     games_stats.append(game_stats)
-    print('Stats after the Game: ', game_stats)
+    print('\n'+'Stats after the Game: ', game_stats)
     # print('weights', agent.weights)
     # print('AVG score:', avg_points/games_epoch)
 
@@ -95,11 +104,3 @@ print('======================GAME STATS======================')
 print('======================================================')
 for game_stats in games_stats:
     print(game_stats)
-
-df = pd.DataFrame(games_stats, columns =['Epoch', 'Weights', 'AVG'])
-print(df)
-
-
-timestr = time.strftime("%Y%m%d-%H%M%S")
-name = timestr + name_game
-df.to_excel(name) 
